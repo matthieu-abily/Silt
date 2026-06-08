@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.14.2';
+  const VERSION = '0.14.3';
   const BOARD_W = 5000;
   const BOARD_H = 3200;
   const PAGE_ORIGIN = { x: 140, y: 170 };
@@ -391,6 +391,19 @@
     if (!pwaPanel) return;
     const open = typeof force === 'boolean' ? force : pwaPanel.style.display === 'none';
     pwaPanel.style.display = open ? 'block' : 'none';
+  }
+
+  function enforceTopbarVisibility() {
+    const ids = ['mainMenuBtn', 'newBtn', 'openBtn', 'addImagesLabel', 'saveBtn', 'fitBtn', 'printBtn', 'pwaHelpBtn', 'pwaUpdateBtn'];
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      el.style.visibility = 'visible';
+      el.style.opacity = '1';
+      if (['newBtn', 'openBtn', 'addImagesLabel', 'saveBtn', 'fitBtn', 'printBtn', 'pwaHelpBtn', 'pwaUpdateBtn'].includes(id) && !el.hidden) {
+        el.style.display = 'inline-flex';
+      }
+    }
   }
 
 
@@ -2923,7 +2936,7 @@
     window.addEventListener('keydown', handleKeyboard);
     window.addEventListener('paste', handlePaste);
     window.addEventListener('keyup', e => { if (e.code === 'Space') { state.isSpaceDown = false; resetCursor(); } });
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', () => { resizeCanvas(); enforceTopbarVisibility(); });
     window.addEventListener('beforeunload', e => { if (state.dirty) { e.preventDefault(); e.returnValue = ''; } });
   }
 
@@ -2960,6 +2973,7 @@
     setClean();
     draw();
     updateUI();
+    enforceTopbarVisibility();
     updateStandaloneClass();
     try { window.matchMedia?.('(display-mode: standalone)')?.addEventListener?.('change', updateStandaloneClass); } catch (_) {}
     setTimeout(maybeRestoreAutosaveAfterLaunch, 450);

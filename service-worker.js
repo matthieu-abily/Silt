@@ -1,5 +1,5 @@
 /* Silt PWA offline service worker */
-const SILT_CACHE_VERSION = "silt-v0.14.2-offline-1";
+const SILT_CACHE_VERSION = "silt-v0.14.3-offline-1";
 const APP_SHELL = [
   "./",
   "./index.html",
