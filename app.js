@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.14.3';
+  const VERSION = '0.14.4';
   const BOARD_W = 5000;
   const BOARD_H = 3200;
   const PAGE_ORIGIN = { x: 140, y: 170 };

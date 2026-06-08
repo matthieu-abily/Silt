@@ -555,14 +555,13 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
 }
 
 
-/* v0.14.3 compact top-bar invariant.
-   Top-bar controls must remain visible/reachable on iPad.
-   The layout gets smaller and wraps; it does not hide Open or rely on horizontal scrolling. */
+/* v0.14.4 balanced top-bar invariant.
+   Keep top-bar controls reachable without wasting iPad vertical space.
+   On iPad: compact two-row bar, minimal reserved height, no hidden file actions. */
 .topbar .top-button,
 .topbar .icon-button,
 .topbar .top-select,
 .topbar .top-toggle,
-.topbar .pwa-status,
 #newBtn,
 #openBtn,
 #addImagesLabel,
@@ -589,20 +588,23 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
 .file-actions {
   display: inline-flex !important;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   flex: 0 0 auto;
 }
 
+/* Tablet / iPad: exactly two compact visible rows when needed. */
 @media (max-width: 1120px), (pointer: coarse) {
+  :root { --top-h: 76px; }
+
   .topbar {
     grid-template-columns: 1fr !important;
-    height: auto;
-    min-height: 84px;
+    height: var(--top-h);
+    min-height: var(--top-h);
     align-content: start;
-    gap: 4px;
-    padding-top: calc(5px + env(safe-area-inset-top) * .35);
-    padding-bottom: 5px;
-    overflow: visible;
+    gap: 3px;
+    padding-top: calc(4px + env(safe-area-inset-top) * .25);
+    padding-bottom: 4px;
+    overflow: hidden;
   }
 
   .top-left,
@@ -611,106 +613,19 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
     max-width: 100%;
     min-width: 0;
     display: flex;
-    flex-wrap: wrap !important;
-    overflow: visible !important;
+    align-items: center;
+    flex-wrap: nowrap !important;
     gap: 4px;
+    overflow: visible !important;
   }
 
-  .top-left {
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .top-right {
-    justify-content: flex-start !important;
-    align-items: center;
-  }
+  .top-left { justify-content: flex-start; }
+  .top-right { justify-content: flex-start !important; }
 
   .top-left > *,
   .top-right > *,
   .file-actions > * {
     flex: 0 0 auto;
-  }
-
-  .file-actions {
-    gap: 4px;
-  }
-
-  .top-button,
-  .icon-button,
-  .top-select,
-  .top-toggle {
-    min-height: 30px;
-    padding-left: 7px;
-    padding-right: 7px;
-    border-radius: 8px;
-    font-size: 12px;
-    gap: 4px;
-  }
-
-  .top-select {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  .top-select span,
-  .top-toggle span {
-    display: inline !important;
-    font-size: 12px;
-  }
-
-  .top-select select {
-    max-width: 96px;
-    font-size: 12px;
-  }
-
-  .icon-button {
-    min-width: 32px;
-  }
-
-  .zoom {
-    min-width: 34px;
-    font-size: 12px;
-  }
-
-  .board-title {
-    flex: 1 1 180px;
-    max-width: min(280px, 42vw);
-    height: 30px;
-    padding-left: 6px;
-    padding-right: 6px;
-  }
-
-  .project-title-input {
-    width: min(210px, 34vw);
-    min-width: 92px;
-    padding: 5px 7px;
-    font-size: 12px;
-  }
-
-  .pwa-status {
-    height: 26px;
-    padding-left: 7px;
-    padding-right: 7px;
-    font-size: 11px;
-  }
-
-  .workspace {
-    top: calc(var(--top-h) + 40px);
-  }
-}
-
-@media (max-width: 860px), (pointer: coarse) {
-  :root { --top-h: 112px; }
-
-  .topbar {
-    height: var(--top-h);
-    min-height: var(--top-h);
-  }
-
-  .top-left,
-  .top-right {
-    gap: 4px;
   }
 
   .top-button,
@@ -720,7 +635,15 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
     min-height: 28px;
     padding-left: 6px;
     padding-right: 6px;
+    border-radius: 8px;
     font-size: 11.5px;
+    gap: 3px;
+  }
+
+  .top-select,
+  .top-toggle {
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   .top-select span,
@@ -729,24 +652,40 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
   }
 
   .top-select select {
-    max-width: 82px;
+    max-width: 78px;
+    font-size: 11.5px;
+  }
+
+  .icon-button {
+    min-width: 30px;
+  }
+
+  .zoom {
+    min-width: 32px;
     font-size: 11.5px;
   }
 
   .board-title {
-    flex: 1 1 150px;
-    max-width: min(240px, 48vw);
+    flex: 1 1 170px;
+    max-width: min(240px, 36vw);
+    height: 28px;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .board-title .muted {
+    display: none;
   }
 
   .project-title-input {
-    width: min(180px, 38vw);
+    width: min(180px, 32vw);
+    min-width: 86px;
+    padding: 4px 6px;
     font-size: 11.5px;
   }
 
   .pwa-status {
-    max-width: 96px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: none;
   }
 
   .workspace {
@@ -754,12 +693,23 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
   }
 }
 
-@media (max-width: 620px), (pointer: coarse) {
-  :root { --top-h: 132px; }
+/* Narrower iPad / portrait: still compact; no large empty reserved band. */
+@media (max-width: 860px), (pointer: coarse) {
+  :root { --top-h: 82px; }
 
   .topbar {
     height: var(--top-h);
     min-height: var(--top-h);
+    gap: 3px;
+  }
+
+  .top-left,
+  .top-right {
+    gap: 3px;
+  }
+
+  .file-actions {
+    gap: 3px;
   }
 
   .top-button,
@@ -772,17 +722,64 @@ body.is-standalone .pwa-help-btn { display: inline-flex; }
     font-size: 11px;
   }
 
+  .top-select span,
+  .top-toggle span {
+    display: none !important;
+  }
+
   .top-select select {
-    max-width: 72px;
+    max-width: 76px;
     font-size: 11px;
   }
 
   .board-title {
-    flex-basis: 140px;
-    max-width: 210px;
+    flex: 1 1 135px;
+    max-width: min(210px, 40vw);
   }
 
   .project-title-input {
-    width: 150px;
+    width: min(155px, 34vw);
+    font-size: 11px;
+  }
+}
+
+/* Very narrow fallback: allow horizontal reach only if absolutely necessary, but do not reserve a tall empty bar. */
+@media (max-width: 620px), (pointer: coarse) {
+  :root { --top-h: 86px; }
+
+  .top-left,
+  .top-right {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .top-left::-webkit-scrollbar,
+  .top-right::-webkit-scrollbar {
+    display: none;
+  }
+
+  .top-button,
+  .icon-button,
+  .top-select,
+  .top-toggle {
+    min-height: 26px;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 10.5px;
+  }
+
+  .top-select select {
+    max-width: 66px;
+    font-size: 10.5px;
+  }
+
+  .board-title {
+    max-width: 180px;
+  }
+
+  .project-title-input {
+    width: 130px;
   }
 }
