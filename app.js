@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '0.14.4';
+  const VERSION = '0.14.5';
   const BOARD_W = 5000;
   const BOARD_H = 3200;
   const PAGE_ORIGIN = { x: 140, y: 170 };
@@ -64,6 +64,9 @@
   const pwaPanel = document.getElementById('pwaPanel');
   const pwaUpdateBtn = document.getElementById('pwaUpdateBtn');
   const closePwaPanelBtn = document.getElementById('closePwaPanelBtn');
+  const topbar = document.querySelector('.topbar');
+  const arrangeBtn = document.getElementById('arrangeBtn');
+  const arrangeMenu = document.getElementById('arrangeMenu');
 
   const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -393,19 +396,49 @@
     pwaPanel.style.display = open ? 'block' : 'none';
   }
 
+  function syncTopbarHeight() {
+    if (!topbar) return;
+    const h = Math.max(48, Math.ceil(topbar.getBoundingClientRect().height || topbar.offsetHeight || 48));
+    document.documentElement.style.setProperty('--silt-measured-topbar-h', `${h}px`);
+  }
+
   function enforceTopbarVisibility() {
-    const ids = ['mainMenuBtn', 'newBtn', 'openBtn', 'addImagesLabel', 'saveBtn', 'fitBtn', 'printBtn', 'pwaHelpBtn', 'pwaUpdateBtn'];
+    const ids = ['mainMenuBtn', 'newBtn', 'openBtn', 'addImagesLabel', 'saveBtn', 'fitBtn', 'printBtn', 'pwaHelpBtn', 'pwaUpdateBtn', 'arrangeBtn'];
     for (const id of ids) {
       const el = document.getElementById(id);
       if (!el) continue;
       el.style.visibility = 'visible';
       el.style.opacity = '1';
-      if (['newBtn', 'openBtn', 'addImagesLabel', 'saveBtn', 'fitBtn', 'printBtn', 'pwaHelpBtn', 'pwaUpdateBtn'].includes(id) && !el.hidden) {
+      if (['newBtn', 'openBtn', 'addImagesLabel', 'saveBtn', 'fitBtn', 'printBtn', 'pwaHelpBtn', 'pwaUpdateBtn', 'arrangeBtn'].includes(id) && !el.hidden) {
         el.style.display = 'inline-flex';
       }
     }
+    syncTopbarHeight();
+    positionArrangeMenu();
   }
 
+  function positionArrangeMenu() {
+    if (!arrangeBtn || !arrangeMenu || arrangeMenu.hidden) return;
+    const r = arrangeBtn.getBoundingClientRect();
+    const margin = 8;
+    const menuW = Math.min(320, window.innerWidth - margin * 2);
+    arrangeMenu.style.minWidth = `${Math.min(210, menuW)}px`;
+    const left = Math.min(Math.max(margin, r.left), window.innerWidth - menuW - margin);
+    const top = Math.min(window.innerHeight - 120, r.bottom + 6);
+    arrangeMenu.style.left = `${left}px`;
+    arrangeMenu.style.top = `${top}px`;
+  }
+
+  function toggleArrangeMenu(force) {
+    if (!arrangeMenu || !arrangeBtn) return;
+    const open = typeof force === 'boolean' ? force : arrangeMenu.hidden;
+    arrangeMenu.hidden = !open;
+    arrangeBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      positionArrangeMenu();
+      showToast(selectedIds().length ? 'Arrange' : 'Select item(s) first');
+    }
+  }
 
   let toastTimer = null;
   function showToast(message) {
@@ -496,8 +529,7 @@
     for (const id of ['rotateLeftBtn', 'rotateRightBtn']) {
       document.getElementById(id).disabled = count !== 1 || !['image', 'text'].includes(selectedObject()?.type) || isLocked(selectedObject());
     }
-    const arrangeSelect = document.getElementById('arrangeSelect');
-    if (arrangeSelect) arrangeSelect.disabled = !hasSelection;
+    if (arrangeBtn) arrangeBtn.title = hasSelection ? 'Arrange selected item(s)' : 'Arrange actions · select item(s) first';
     zoomLabel.textContent = `${Math.round(state.scale * 100)}%`;
     updateStylePanel();
     setStatus(state.dirty ? 'Unsaved changes' : 'Saved');
@@ -2842,6 +2874,23 @@
     document.getElementById('mainMenuBtn').addEventListener('click', () => { const help = document.getElementById('helpPanel'); help.style.display = help.style.display === 'none' ? 'block' : 'none'; });
     pwaHelpBtn?.addEventListener('click', () => togglePWAPanel());
     closePwaPanelBtn?.addEventListener('click', () => togglePWAPanel(false));
+    arrangeBtn?.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleArrangeMenu();
+    });
+    arrangeMenu?.addEventListener('click', e => {
+      const button = e.target.closest('button[data-arrange-action]');
+      if (!button) return;
+      const action = button.dataset.arrangeAction;
+      toggleArrangeMenu(false);
+      if (action) performAction(action);
+    });
+    document.addEventListener('pointerdown', e => {
+      if (!arrangeMenu || arrangeMenu.hidden) return;
+      if (arrangeMenu.contains(e.target) || arrangeBtn?.contains(e.target)) return;
+      toggleArrangeMenu(false);
+    });
     pwaUpdateBtn?.addEventListener('click', () => {
       try {
         navigator.serviceWorker?.getRegistration?.().then(reg => {
@@ -2887,11 +2936,7 @@
     document.getElementById('closeHelp').addEventListener('click', () => document.getElementById('helpPanel').style.display = 'none');
     backgroundSelect.addEventListener('change', () => { readStyleControls(); markDirty(); draw(); showToast(`Background: ${state.appearance.background}`); });
     snapToggle?.addEventListener('change', () => { readStyleControls(); state.guides = []; markDirty(); draw(); showToast(state.appearance.snapEnabled === false ? 'Snap off' : 'Snap on'); });
-    document.getElementById('arrangeSelect')?.addEventListener('change', e => {
-      const action = e.target.value;
-      e.target.value = '';
-      if (action) performAction(action);
-    });
+    // Arrange uses a custom popover instead of a native select, which was unreliable in iPad PWA mode.
     pagePresetSelect?.addEventListener('change', () => {
       finishTextEditing(true);
       const before = makeSnapshot();
@@ -2960,6 +3005,25 @@
     suggestedBoardFilename() { return suggestedBoardFilename(); },
     projectTitle() { return normalizeProjectTitle(state.metadata?.title || 'Untitled'); },
     performAction(action) { return performAction(action); },
+    smokeTestSnapshot() {
+      finishTextEditing(true);
+      enforceTopbarVisibility();
+      return {
+        version: VERSION,
+        objectCount: state.objects.length,
+        selectedCount: selectedIds().length,
+        dirty: Boolean(state.dirty),
+        topbarHeight: topbar ? Math.ceil(topbar.getBoundingClientRect().height) : 0,
+        visibleControls: ['mainMenuBtn','newBtn','openBtn','addImagesLabel','saveBtn','pagePresetSelect','backgroundSelect','snapToggle','arrangeBtn','zoomOutBtn','fitBtn','zoomInBtn','exportSelect','printBtn','pwaHelpBtn'].map(id => {
+          const el = document.getElementById(id);
+          if (!el) return { id, present: false, visible: false, width: 0, height: 0 };
+          const r = el.getBoundingClientRect();
+          const cs = getComputedStyle(el);
+          return { id, present: true, visible: cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0, width: Math.round(r.width), height: Math.round(r.height) };
+        }),
+        arrangeMenuButtons: arrangeMenu ? [...arrangeMenu.querySelectorAll('button[data-arrange-action]')].map(b => b.dataset.arrangeAction) : [],
+      };
+    },
   };
   window.MoodboardBridge = window.SiltBridge; // backwards-compatible alias for older native wrappers
 
@@ -2974,6 +3038,7 @@
     draw();
     updateUI();
     enforceTopbarVisibility();
+    try { if (topbar && 'ResizeObserver' in window) new ResizeObserver(() => enforceTopbarVisibility()).observe(topbar); } catch (_) {}
     updateStandaloneClass();
     try { window.matchMedia?.('(display-mode: standalone)')?.addEventListener?.('change', updateStandaloneClass); } catch (_) {}
     setTimeout(maybeRestoreAutosaveAfterLaunch, 450);

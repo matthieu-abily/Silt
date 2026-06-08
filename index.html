@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Silt v0.14.4</title>
+  <title>Silt v0.14.5</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#fbfaf7">
@@ -58,25 +58,26 @@
         <input id="snapToggle" type="checkbox" checked />
         <span>Snap</span>
       </label>
-      <label class="top-select arrange-select" title="Group, lock, align, distribute, and tidy selected items">
-        <span>Arrange</span>
-        <select id="arrangeSelect">
-          <option value="">Choose…</option>
-          <option value="group">Group</option>
-          <option value="ungroup">Ungroup</option>
-          <option value="lock">Lock</option>
-          <option value="unlock">Unlock</option>
-          <option value="align-left">Align left</option>
-          <option value="align-center">Align center</option>
-          <option value="align-right">Align right</option>
-          <option value="align-top">Align top</option>
-          <option value="align-middle">Align middle</option>
-          <option value="align-bottom">Align bottom</option>
-          <option value="distribute-h">Distribute horizontal</option>
-          <option value="distribute-v">Distribute vertical</option>
-          <option value="tidy">Tidy selection</option>
-        </select>
-      </label>
+      <div class="arrange-control" title="Group, lock, align, distribute, and tidy selected items">
+        <button id="arrangeBtn" class="top-button arrange-button" type="button" aria-haspopup="true" aria-expanded="false">Arrange</button>
+        <div id="arrangeMenu" class="arrange-menu" hidden aria-label="Arrange actions">
+          <button type="button" data-arrange-action="group">Group</button>
+          <button type="button" data-arrange-action="ungroup">Ungroup</button>
+          <button type="button" data-arrange-action="lock">Lock</button>
+          <button type="button" data-arrange-action="unlock">Unlock</button>
+          <hr />
+          <button type="button" data-arrange-action="align-left">Align left</button>
+          <button type="button" data-arrange-action="align-center">Align center</button>
+          <button type="button" data-arrange-action="align-right">Align right</button>
+          <button type="button" data-arrange-action="align-top">Align top</button>
+          <button type="button" data-arrange-action="align-middle">Align middle</button>
+          <button type="button" data-arrange-action="align-bottom">Align bottom</button>
+          <hr />
+          <button type="button" data-arrange-action="distribute-h">Distribute horizontal</button>
+          <button type="button" data-arrange-action="distribute-v">Distribute vertical</button>
+          <button type="button" data-arrange-action="tidy">Tidy selection</button>
+        </div>
+      </div>
       <button id="zoomOutBtn" class="icon-button" title="Zoom out">−</button>
       <button id="fitBtn" class="top-button" title="Fit content">Fit</button>
       <span id="zoomLabel" class="zoom">100%</span>
