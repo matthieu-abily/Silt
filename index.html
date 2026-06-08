@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Silt v0.14.2</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#fbfaf7">
+  <meta name="application-name" content="Silt">
+  <meta name="apple-mobile-web-app-title" content="Silt">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
+</head>
+<body>
+  <header class="topbar" aria-label="Silt top bar">
+    <div class="top-left">
+      <button id="mainMenuBtn" class="icon-button ghost" title="Silt menu">Silt</button>
+      <button id="newBtn" class="top-button" title="New board">New</button>
+      <button id="openBtn" class="top-button" title="Open board file · ⌘O">Open</button>
+      <label id="addImagesLabel" class="top-button" title="Import image references">
+        Images
+        <input id="imageInput" type="file" accept="image/*" multiple />
+      </label>
+      <button id="saveBtn" class="top-button primary" title="Save board file · ⌘S">Save</button>
+      <div class="board-title" aria-label="Board identity">
+        <span class="muted">Project</span>
+        <input id="projectTitleInput" class="project-title-input" type="text" maxlength="120" value="Untitled" aria-label="Project title / suggested filename" title="Project title. This becomes the suggested .siltboard filename." />
+        <span id="dirtyDot" class="dirty-dot" title="Unsaved changes"></span>
+      </div>
+      <input id="projectInput" type="file" title="Open a .siltboard or compatible JSON board file" />
+    </div>
+
+    <div class="top-right">
+      <label class="top-select" title="Canvas/page size preset">
+        <span>Canvas</span>
+        <select id="pagePresetSelect">
+          <option value="free">Free</option>
+          <option value="a4-portrait">A4 Portrait</option>
+          <option value="a4-landscape">A4 Landscape</option>
+          <option value="16x9">16:9</option>
+        </select>
+      </label>
+      <label class="top-select" title="Canvas background">
+        <span>Background</span>
+        <select id="backgroundSelect">
+          <option value="dots">Dots</option>
+          <option value="clear">Clear</option>
+          <option value="grid">Grid</option>
+        </select>
+      </label>
+      <label class="top-toggle" title="Toggle snap / alignment guides">
+        <input id="snapToggle" type="checkbox" checked />
+        <span>Snap</span>
+      </label>
+      <label class="top-select arrange-select" title="Group, lock, align, distribute, and tidy selected items">
+        <span>Arrange</span>
+        <select id="arrangeSelect">
+          <option value="">Choose…</option>
+          <option value="group">Group</option>
+          <option value="ungroup">Ungroup</option>
+          <option value="lock">Lock</option>
+          <option value="unlock">Unlock</option>
+          <option value="align-left">Align left</option>
+          <option value="align-center">Align center</option>
+          <option value="align-right">Align right</option>
+          <option value="align-top">Align top</option>
+          <option value="align-middle">Align middle</option>
+          <option value="align-bottom">Align bottom</option>
+          <option value="distribute-h">Distribute horizontal</option>
+          <option value="distribute-v">Distribute vertical</option>
+          <option value="tidy">Tidy selection</option>
+        </select>
+      </label>
+      <button id="zoomOutBtn" class="icon-button" title="Zoom out">−</button>
+      <button id="fitBtn" class="top-button" title="Fit content">Fit</button>
+      <span id="zoomLabel" class="zoom">100%</span>
+      <button id="zoomInBtn" class="icon-button" title="Zoom in">+</button>
+      <label class="top-select export-select" title="Export PNG">
+        <span>Export</span>
+        <select id="exportSelect">
+          <option value="">PNG…</option>
+          <option value="board">Board PNG</option>
+          <option value="area">Area PNG…</option>
+        </select>
+      </label>
+      <button id="printBtn" class="top-button" title="Print / Save as PDF">PDF</button>
+      <button id="pwaHelpBtn" class="top-button pwa-help-btn" title="PWA / iPad help">iPad</button>
+      <button id="pwaUpdateBtn" class="top-button pwa-update-btn" title="Update cached app" hidden>Update</button>
+      <span id="pwaStatus" class="pwa-status" title="Offline cache status">Offline</span>
+    </div>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <canvas id="board" width="1600" height="900" aria-label="Silt board canvas"></canvas>
+    <textarea id="textEditor" class="text-editor" spellcheck="true" aria-label="Text editor"></textarea>
+
+    <section class="style-popover" id="stylePopover" aria-label="Tool style controls">
+      <div class="popover-header">
+        <strong id="styleTitle">Tool options</strong>
+        <span id="styleHint">Select a tool or item to edit relevant options.</span>
+      </div>
+
+      <div class="popover-row" data-style-section="stroke">
+        <label class="swatch-control" title="Stroke or text color">
+          <span id="strokeLabel">Stroke</span>
+          <input id="strokeColor" type="color" value="#2f3437" />
+        </label>
+        <label class="mini-select" title="Line style">
+          <span>Style</span>
+          <select id="strokeStyle">
+            <option value="solid">Solid</option>
+            <option value="dashed">Dashed</option>
+            <option value="marker">Marker</option>
+          </select>
+        </label>
+        <label class="range-control" title="Stroke thickness">
+          <span>Thickness</span>
+          <input id="strokeWidth" type="range" min="1" max="28" step="1" value="5" />
+          <output id="strokeWidthLabel">5</output>
+        </label>
+      </div>
+
+      <div class="popover-row" data-style-section="fill">
+        <label class="swatch-control" title="Fill color for notes, stickers and frames">
+          <span>Fill</span>
+          <input id="fillColor" type="color" value="#fff1a8" />
+        </label>
+        <label class="check-control" title="Use transparent fill instead of a color">
+          <input id="fillNone" type="checkbox" />
+          <span>No fill</span>
+        </label>
+      </div>
+
+      <div class="popover-row" data-style-section="type">
+        <label class="range-control" title="Text size for notes and stickers">
+          <span>Font size</span>
+          <input id="fontSize" type="range" min="10" max="96" step="1" value="26" />
+          <output id="fontSizeLabel">26</output>
+        </label>
+      </div>
+
+      <div class="popover-row" data-style-section="object">
+        <label class="range-control" title="Object opacity">
+          <span>Opacity</span>
+          <input id="objectOpacity" type="range" min="10" max="100" step="1" value="100" />
+          <output id="objectOpacityLabel">100%</output>
+        </label>
+        <button id="applyStyleBtn" class="top-button" title="Apply visible options to the selected item or future tool use">Apply</button>
+        <button id="clearFillBtn" class="top-button" title="Make selected note/sticker/frame background transparent">No Fill</button>
+      </div>
+    </section>
+
+    <section class="help" id="helpPanel">
+      <button id="closeHelp" class="close" aria-label="Close help">×</button>
+      <h1>Silt — rough fragments before form</h1>
+      <p>Drop images, arrange references, write notes, draw arrows, sketch, add stickers, and frame clusters. Use it for scripts, scenario, worldbuilding, characters, locations, visual motifs, and DoP moodboards.</p>
+      <p><strong>v0.13.5:</strong> hotfixes Select/move reliability, keeps export modes for page and selection, keeps project-title filename suggestions, and preserves object connectors. Use Connector, click one item, then click a second item. Connectors follow the items and are removed automatically if either endpoint disappears.</p>
+      <p><strong>iPad:</strong> use Pan to move around. Pencil/finger drawing works best with the Pen tool. Text notes and frame labels edit in-place.</p>
+      <p><strong>Shared folders:</strong> save <code>.siltboard</code> files inside Google Drive, iCloud Drive, Dropbox, Syncthing, or any normal synced folder.</p>
+      <p><strong>Shortcuts:</strong> Space-drag pan, wheel/pinch zoom where supported, ⌘Z undo, ⇧⌘Z redo, ⌘D duplicate, Delete remove, double-click/tap a note to edit, Shift-click to multi-select, drag on blank canvas to lasso, ⌘G group, ⇧⌘G ungroup, ⌘L lock/unlock. Turn Snap off in the top bar when you want completely free placement. Use Canvas → A4 or 16:9 when you want a moodboard with a fixed export ratio. Export → Board PNG exports the active A4/16:9 page exactly; in Free mode it crops to the whole used board with a small margin. Export → Area PNG lets you drag a screenshot-style export window. The Project title in the top bar becomes the suggested file name.</p>
+    </section>
+  </main>
+
+  <nav class="bottom-dock" aria-label="Silt tools">
+    <div class="dock-tools">
+      <button data-tool="select" class="tool active" title="Select, move, resize">↖</button>
+      <button data-tool="pan" class="tool" title="Pan canvas; useful on iPad" aria-label="Pan canvas">
+        <svg class="hand-glyph" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M8 12.2V6.6a1.15 1.15 0 0 1 2.3 0v5.1" />
+          <path d="M10.3 11.4V5.4a1.15 1.15 0 0 1 2.3 0v6" />
+          <path d="M12.6 11.7V6.5a1.12 1.12 0 0 1 2.24 0v6.1" />
+          <path d="M14.84 13.2V8.4a1.08 1.08 0 0 1 2.16 0v6.45" />
+          <path d="M8 12.2l-1.1-1.15a1.22 1.22 0 0 0-1.78 1.66l3.12 4.18c1.06 1.42 2.7 2.26 4.48 2.26h.95c2.06 0 3.33-.95 3.33-3.33v-.97" />
+        </svg>
+      </button>
+      <span class="dock-divider"></span>
+      <button data-tool="pen" class="tool tall-tool" title="Draw freehand strokes">✎</button>
+      <button data-tool="text" class="tool" title="Tap/click to add a note">T</button>
+      <button data-tool="sticker" class="tool" title="Tap/click to add a colored sticker"><span class="sticker-glyph" aria-hidden="true"></span></button>
+      <button data-tool="arrow" class="tool" title="Drag to draw a free arrow">↗</button>
+      <button data-tool="connector" class="tool" title="Connect two items; connectors follow objects and disappear if an endpoint is deleted">⟷</button>
+      <button data-tool="frame" class="tool" title="Drag to create a frame">▢</button>
+      <span class="dock-divider"></span>
+      <button id="styleToggleBtn" class="tool utility" title="Contextual tool options">⚙</button>
+      <button id="undoBtn" class="tool utility" title="Undo · ⌘Z">↶</button>
+      <button id="redoBtn" class="tool utility" title="Redo · ⇧⌘Z">↷</button>
+      <button id="duplicateBtn" class="tool utility" title="Duplicate selected · ⌘D">⧉</button>
+      <button id="bringFrontBtn" class="tool utility" title="Bring selected forward">↑</button>
+      <button id="sendBackBtn" class="tool utility" title="Send selected backward">↓</button>
+      <button id="rotateLeftBtn" class="tool utility" title="Rotate selected -15°">⟲</button>
+      <button id="rotateRightBtn" class="tool utility" title="Rotate selected +15°">⟳</button>
+      <button id="deleteBtn" class="tool danger" title="Delete selected">⌫</button>
+    </div>
+  </nav>
+
+  <footer class="statusbar">
+    <span id="statusText">Ready</span>
+    <span id="autosaveStatus" class="autosave-status" title="Local recovery autosave status">Autosave ready</span>
+  </footer>
+
+  <aside id="pwaPanel" class="pwa-panel" style="display:none" aria-label="iPad / PWA help">
+    <h2>iPad / PWA</h2>
+    <p><strong>Autosave</strong> is local recovery only. Use <strong>Save</strong> for a durable <code>.siltboard</code> file.</p>
+    <p><strong>Offline use</strong>: launch once online after updating, then reopen from the Home Screen.</p>
+    <p><strong>Open</strong> imports a board file from Files. <strong>Save</strong> downloads/exports a copy.</p>
+    <p>On iPad, open files from inside Silt with <strong>Open</strong>. Tapping a <code>.siltboard</code> directly in Files is not reliable in PWA mode.</p>
+    <button id="closePwaPanelBtn" class="top-button">Close</button>
+  </aside>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
